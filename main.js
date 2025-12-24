@@ -1,4 +1,4 @@
-import { earthShape } from "./shapes.js";
+import {  heartShape, saturnShape, fireworkShape, earthShape } from "./shapes.js";
 
 
 let scene, camera, renderer, particles;
