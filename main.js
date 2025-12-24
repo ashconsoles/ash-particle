@@ -33,39 +33,42 @@ function init() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
+
+  // IMPORTANT
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1;
+
   document.body.appendChild(renderer.domElement);
 
-  /* 🌍 Earth Sphere */
+  /* 🌍 EARTH */
   const geometry = new THREE.SphereGeometry(1, 64, 64);
   const loader = new THREE.TextureLoader();
 
-  const earthDay = loader.load("./textures/earth_day.jpg");
-  const earthNight = loader.load("./textures/earth_night.jpg");
+  const earthTexture = loader.load(
+    "./textures/earth_day.jpg",
+    () => console.log("✅ Earth texture loaded"),
+    undefined,
+    err => console.error("❌ Texture failed", err)
+  );
 
-  const material = new THREE.MeshStandardMaterial({
-    map: earthDay,
-    emissiveMap: earthNight,
-    emissiveIntensity: 0.6
+  const earthMaterial = new THREE.MeshPhongMaterial({
+    map: earthTexture
   });
 
-  earth = new THREE.Mesh(geometry, material);
+  earth = new THREE.Mesh(geometry, earthMaterial);
   scene.add(earth);
 
-  /* 💡 Lights */
-  scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+  /* 💡 LIGHTS (VERY IMPORTANT) */
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-  const sun = new THREE.DirectionalLight(0xffffff, 1);
-  sun.position.set(5, 2, 5);
+  const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+  sun.position.set(5, 3, 5);
   scene.add(sun);
 
   window.addEventListener("resize", onResize);
 }
 
-function onResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-}
 
 /* =======================
    ANIMATION LOOP
