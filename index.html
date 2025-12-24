@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ash Particle</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+html,body { margin:0; padding:0; overflow:hidden; background:#000; }
+#video { display:none; }
+canvas { display:block; }
+</style>
+
+<!-- Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.min.js"></script>
+</head>
+
+<body>
+<video id="video" autoplay></video>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>
