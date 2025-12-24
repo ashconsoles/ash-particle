@@ -6,6 +6,8 @@ import {
   galaxyShape
 } from "./shapes.js";
 
+let camTargetX = 0;
+let camTargetY = 0;
 
 
 let scene, camera, renderer, particles;
@@ -101,6 +103,11 @@ function createParticles(shapeFn) {
 function animate() {
   requestAnimationFrame(animate);
 
+  
+  // smooth camera movement
+  camera.rotation.y += (camTargetX - camera.rotation.y) * 0.08;
+  camera.rotation.x += (camTargetY - camera.rotation.x) * 0.08;
+
   particles.rotation.y += 0.002;
   particles.scale.set(scaleFactor, scaleFactor, scaleFactor);
   particles.material.color.setHSL(colorHue / 360, 1, 0.6);
@@ -136,8 +143,13 @@ function initHandTracking() {
     // ✋ Pinch → Scale
     scaleFactor = THREE.MathUtils.clamp(distance * 6, 0.5, 3);
 
-    // 👆 Move finger up/down → Color
-    colorHue = (1 - index.y) * 360;
+    // 👆 Index finger controls camera angle
+camTargetX = (index.x - 0.5) * Math.PI * 0.6; // left/right
+camTargetY = (index.y - 0.5) * Math.PI * 0.4; // up/down
+
+// Color still works
+colorHue = (1 - index.y) * 360;
+
 
     // ✊ Fist → Switch shape
     if (distance < 0.03) {
