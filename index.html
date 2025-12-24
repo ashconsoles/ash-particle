@@ -2,17 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ash Particle</title>
+<title>Ash Earth</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-html,body { margin:0; padding:0; overflow:hidden; background:#000; }
-#video { display:none; }
-canvas { display:block; }
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+}
+canvas { display: block; }
+#video { display: none; }
 </style>
-
-<!-- Three.js -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
 <!-- MediaPipe -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js"></script>
@@ -20,8 +22,12 @@ canvas { display:block; }
 </head>
 
 <body>
-<video id="video" autoplay></video>
 
-<script type="module" src="main.js"></script>
+<!-- Camera input (required for MediaPipe) -->
+<video id="video" autoplay muted playsinline></video>
+
+<!-- Three.js app -->
+<script type="module" src="./main.js"></script>
+
 </body>
 </html>
