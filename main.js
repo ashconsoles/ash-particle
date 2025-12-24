@@ -1,4 +1,5 @@
-import { heartShape, saturnShape, fireworkShape } from "./shapes.js";
+import { heartShape, saturnShape, fireworkShape, earthShape } from "./shapes.js";
+
 
 let scene, camera, renderer, particles;
 let currentShape = heartShape;
@@ -25,26 +26,52 @@ function init() {
 function createParticles(shapeFn) {
   if (particles) scene.remove(particles);
 
-  const count = 3000;
+  const count = 4000;
   const geo = new THREE.BufferGeometry();
-  const pos = new Float32Array(count * 3);
 
-  shapeFn(count).forEach((p, i) => {
-    pos[i*3] = p[0];
-    pos[i*3+1] = p[1];
-    pos[i*3+2] = p[2];
-  });
+  const pos = new Float32Array(count * 3);
+  const col = new Float32Array(count * 3);
+
+  const points = shapeFn(count);
+
+  for (let i = 0; i < count; i++) {
+    pos[i*3]   = points[i][0];
+    pos[i*3+1] = points[i][1];
+    pos[i*3+2] = points[i][2];
+
+    // 🌍 Earth coloring
+    if (shapeFn === earthShape) {
+      const y = points[i][1];
+
+      if (y > 0.45) {
+        col[i*3] = 1; col[i*3+1] = 1; col[i*3+2] = 1; // clouds
+      } else if (Math.random() > 0.65) {
+        col[i*3] = 0.1; col[i*3+1] = 0.6; col[i*3+2] = 0.2; // land
+      } else {
+        col[i*3] = 0.05; col[i*3+1] = 0.3; col[i*3+2] = 0.8; // ocean
+      }
+    } 
+    // ❤️ Other shapes keep HSL color
+    else {
+      const c = new THREE.Color(`hsl(${colorHue},100%,60%)`);
+      col[i*3] = c.r;
+      col[i*3+1] = c.g;
+      col[i*3+2] = c.b;
+    }
+  }
 
   geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
 
   const mat = new THREE.PointsMaterial({
-    size: 0.03,
-    color: new THREE.Color(`hsl(${colorHue},100%,60%)`)
+    size: shapeFn === earthShape ? 0.025 : 0.03,
+    vertexColors: true
   });
 
   particles = new THREE.Points(geo, mat);
   scene.add(particles);
 }
+
 
 function animate() {
   requestAnimationFrame(animate);
@@ -91,6 +118,13 @@ function initHandTracking() {
     if (distance < 0.03) {
       switchShape();
     }
+
+if (currentShape === earthShape) {
+  particles.rotation.y += 0.0015;
+  particles.rotation.x += 0.0003;
+}
+
+    
   });
 
   const cameraFeed = new Camera(document.getElementById("video"), {
@@ -100,9 +134,15 @@ function initHandTracking() {
   });
   cameraFeed.start();
 }
-
 function switchShape() {
-  const shapes = [heartShape, saturnShape, fireworkShape];
+  const shapes = [
+    heartShape,
+    saturnShape,
+    fireworkShape,
+    earthShape // 🌍 added
+  ];
+
   currentShape = shapes[Math.floor(Math.random() * shapes.length)];
   createParticles(currentShape);
 }
+
