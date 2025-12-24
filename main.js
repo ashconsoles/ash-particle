@@ -55,3 +55,54 @@ function animate() {
 
   renderer.render(scene, camera);
 }
+
+function initHandTracking() {
+  const hands = new Hands({
+    locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+  });
+
+  hands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.7,
+    minTrackingConfidence: 0.7
+  });
+
+  hands.onResults(results => {
+    if (!results.multiHandLandmarks.length) return;
+
+    const lm = results.multiHandLandmarks[0];
+
+    const thumb = lm[4];
+    const index = lm[8];
+
+    const distance = Math.hypot(
+      thumb.x - index.x,
+      thumb.y - index.y
+    );
+
+    // ✋ Pinch → Scale
+    scaleFactor = THREE.MathUtils.clamp(distance * 6, 0.5, 3);
+
+    // 👆 Move finger up/down → Color
+    colorHue = (1 - index.y) * 360;
+
+    // ✊ Fist → Switch shape
+    if (distance < 0.03) {
+      switchShape();
+    }
+  });
+
+  const cameraFeed = new Camera(document.getElementById("video"), {
+    onFrame: async () => await hands.send({ image: video }),
+    width: 640,
+    height: 480
+  });
+  cameraFeed.start();
+}
+
+function switchShape() {
+  const shapes = [heartShape, saturnShape, fireworkShape];
+  currentShape = shapes[Math.floor(Math.random() * shapes.length)];
+  createParticles(currentShape);
+}
