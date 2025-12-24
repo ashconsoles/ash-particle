@@ -35,3 +35,24 @@ export function fireworkShape(count) {
   }
   return pts;
 }
+
+export function earthShape(count) {
+  const pts = [];
+
+  for (let i = 0; i < count; i++) {
+    const u = Math.random();
+    const v = Math.random();
+
+    const theta = 2 * Math.PI * u;
+    const phi = Math.acos(2 * v - 1);
+
+    const r = 1;
+
+    const x = r * Math.sin(phi) * Math.cos(theta);
+    const y = r * Math.cos(phi);
+    const z = r * Math.sin(phi) * Math.sin(theta);
+
+    pts.push([x, y, z]);
+  }
+  return pts;
+}
