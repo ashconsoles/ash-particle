@@ -6,8 +6,10 @@ import {
   galaxyShape
 } from "./shapes.js";
 
-let camTargetX = 0;
-let camTargetY = 0;
+let orbitYaw = 0;    // left / right
+let orbitPitch = 0;  // up / down
+const orbitRadius = 4;
+
 
 
 let scene, camera, renderer, particles;
@@ -103,22 +105,39 @@ function createParticles(shapeFn) {
 function animate() {
   requestAnimationFrame(animate);
 
-  
-  // smooth camera movement
-  camera.rotation.y += (camTargetX - camera.rotation.y) * 0.08;
-  camera.rotation.x += (camTargetY - camera.rotation.x) * 0.08;
+  // limit pitch so camera never flips
+  orbitPitch = THREE.MathUtils.clamp(orbitPitch, -Math.PI/2 + 0.2, Math.PI/2 - 0.2);
 
-  particles.rotation.y += 0.002;
+  // spherical orbit camera
+  camera.position.x =
+    orbitRadius * Math.cos(orbitPitch) * Math.sin(orbitYaw);
+  camera.position.y =
+    orbitRadius * Math.sin(orbitPitch);
+  camera.position.z =
+    orbitRadius * Math.cos(orbitPitch) * Math.cos(orbitYaw);
+
+  camera.lookAt(0, 0, 0);
+
+  // particle behavior
   particles.scale.set(scaleFactor, scaleFactor, scaleFactor);
-  particles.material.color.setHSL(colorHue / 360, 1, 0.6);
+
+  if (currentShape === galaxyShape) {
+    particles.rotation.y += 0.002;
+
+    const pos = particles.geometry.attributes.position.array;
+    for (let i = 0; i < pos.length; i += 3) {
+      const x = pos[i];
+      const z = pos[i+2];
+      const d = Math.sqrt(x*x + z*z) + 0.001;
+      pos[i]   -= (x / d) * 0.00005;
+      pos[i+2] -= (z / d) * 0.00005;
+    }
+    particles.geometry.attributes.position.needsUpdate = true;
+  }
 
   renderer.render(scene, camera);
 }
 
-function initHandTracking() {
-  const hands = new Hands({
-    locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-  });
 
   hands.setOptions({
     maxNumHands: 1,
@@ -143,9 +162,10 @@ function initHandTracking() {
     // ✋ Pinch → Scale
     scaleFactor = THREE.MathUtils.clamp(distance * 6, 0.5, 3);
 
-    // 👆 Index finger controls camera angle
-camTargetX = (index.x - 0.5) * Math.PI * 0.6; // left/right
-camTargetY = (index.y - 0.5) * Math.PI * 0.4; // up/down
+    // 👆 Hand controls camera ORBIT (not direction movement)
+orbitYaw   = (index.x - 0.5) * Math.PI * 2; // left/right orbit
+orbitPitch = (0.5 - index.y) * Math.PI;    // up/down orbit
+
 
 // Color still works
 colorHue = (1 - index.y) * 360;
