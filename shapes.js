@@ -56,3 +56,25 @@ export function earthShape(count) {
   }
   return pts;
 }
+
+export function galaxyShape(count) {
+  const pts = [];
+
+  const arms = 4;
+  const spin = 5;
+
+  for (let i = 0; i < count; i++) {
+    const radius = Math.random() ** 0.5 * 2.2;
+    const arm = (i % arms) / arms * Math.PI * 2;
+
+    const angle = arm + radius * spin;
+
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    const y = (Math.random() - 0.5) * 0.1;
+
+    pts.push([x, y, z, radius]);
+  }
+
+  return pts;
+}
