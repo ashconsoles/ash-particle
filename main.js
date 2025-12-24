@@ -46,7 +46,7 @@ function init() {
   const loader = new THREE.TextureLoader();
 
   const earthTexture = loader.load(
-    "./textures/earth_day.jpg",
+    "./earth_day.jpg",
     () => console.log("✅ Earth texture loaded"),
     undefined,
     err => console.error("❌ Texture failed", err)
