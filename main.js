@@ -1,23 +1,17 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js";
 
 /* =======================
-   CAMERA ORBIT STATE
+   GLOBAL STATE
 ======================= */
+let scene, camera, renderer, earth;
 let orbitYaw = 0;
 let orbitPitch = 0;
 const orbitRadius = 4;
 
 /* =======================
-   THREE CORE
-======================= */
-let scene, camera, renderer;
-let earth;
-
-/* =======================
-   INIT
+   INIT THREE
 ======================= */
 init();
-initHandTracking();
 animate();
 
 function init() {
@@ -33,35 +27,25 @@ function init() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-
-  // IMPORTANT
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1;
 
   document.body.appendChild(renderer.domElement);
 
-  /* 🌍 EARTH */
+  // 🌍 Earth
   const geometry = new THREE.SphereGeometry(1, 64, 64);
-  const loader = new THREE.TextureLoader();
-
-  const earthTexture = loader.load(
+  const texture = new THREE.TextureLoader().load(
     "./earth_day.jpg",
     () => console.log("✅ Earth texture loaded"),
     undefined,
     err => console.error("❌ Texture failed", err)
   );
 
-  const earthMaterial = new THREE.MeshPhongMaterial({
-    map: earthTexture
-  });
-
-  earth = new THREE.Mesh(geometry, earthMaterial);
+  const material = new THREE.MeshPhongMaterial({ map: texture });
+  earth = new THREE.Mesh(geometry, material);
   scene.add(earth);
 
-  /* 💡 LIGHTS (VERY IMPORTANT) */
+  // 💡 Lights
   scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
   const sun = new THREE.DirectionalLight(0xffffff, 1.5);
   sun.position.set(5, 3, 5);
   scene.add(sun);
@@ -69,6 +53,11 @@ function init() {
   window.addEventListener("resize", onResize);
 }
 
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
 /* =======================
    ANIMATION LOOP
@@ -96,8 +85,13 @@ function animate() {
 }
 
 /* =======================
-   HAND TRACKING (MEDIAPIPE)
+   HAND TRACKING (USER CLICK)
 ======================= */
+document.getElementById("startBtn").onclick = () => {
+  initHandTracking();
+  document.getElementById("startBtn").remove();
+};
+
 function initHandTracking() {
   const video = document.getElementById("video");
 
@@ -113,12 +107,10 @@ function initHandTracking() {
     minTrackingConfidence: 0.7
   });
 
-  hands.onResults(res => {
-    if (!res.multiHandLandmarks?.length) return;
+  hands.onResults(results => {
+    if (!results.multiHandLandmarks?.length) return;
 
-    const index = res.multiHandLandmarks[0][8];
-
-    // 👆 Inspect Earth like a real 3D object
+    const index = results.multiHandLandmarks[0][8];
     orbitYaw = (index.x - 0.5) * Math.PI * 2;
     orbitPitch = (0.5 - index.y) * Math.PI;
   });
