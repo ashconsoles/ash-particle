@@ -10,10 +10,21 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background: #000;
+  background: black;
 }
 canvas { display: block; }
+
 #video { display: none; }
+
+#startBtn {
+  position: fixed;
+  z-index: 10;
+  top: 20px;
+  left: 20px;
+  padding: 10px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
 </style>
 
 <!-- MediaPipe -->
@@ -23,11 +34,10 @@ canvas { display: block; }
 
 <body>
 
-<!-- Camera input (required for MediaPipe) -->
+<button id="startBtn">Start Camera</button>
+
 <video id="video" autoplay muted playsinline></video>
 
-<!-- Three.js app -->
 <script type="module" src="./main.js"></script>
-
 </body>
 </html>
