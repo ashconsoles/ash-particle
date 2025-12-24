@@ -1,4 +1,11 @@
-import {  heartShape, saturnShape, fireworkShape, earthShape } from "./shapes.js";
+import {
+  heartShape,
+  saturnShape,
+  fireworkShape,
+  earthShape,
+  galaxyShape
+} from "./shapes.js";
+
 
 
 let scene, camera, renderer, particles;
@@ -26,7 +33,7 @@ function init() {
 function createParticles(shapeFn) {
   if (particles) scene.remove(particles);
 
-  const count = 4000;
+  const count = 6000;
   const geo = new THREE.BufferGeometry();
 
   const pos = new Float32Array(count * 3);
@@ -39,19 +46,37 @@ function createParticles(shapeFn) {
     pos[i*3+1] = points[i][1];
     pos[i*3+2] = points[i][2];
 
-    // 🌍 Earth coloring
-    if (shapeFn === earthShape) {
-      const y = points[i][1];
+    // 🌌 GALAXY COLORS
+    if (shapeFn === galaxyShape) {
+      const r = points[i][3];
 
-      if (y > 0.45) {
-        col[i*3] = 1; col[i*3+1] = 1; col[i*3+2] = 1; // clouds
-      } else if (Math.random() > 0.65) {
-        col[i*3] = 0.1; col[i*3+1] = 0.6; col[i*3+2] = 0.2; // land
-      } else {
-        col[i*3] = 0.05; col[i*3+1] = 0.3; col[i*3+2] = 0.8; // ocean
+      // black hole core
+      if (r < 0.15) {
+        col[i*3] = 0; col[i*3+1] = 0; col[i*3+2] = 0;
       }
-    } 
-    // ❤️ Other shapes keep HSL color
+      // hot inner disk
+      else if (r < 0.5) {
+        col[i*3] = 1; col[i*3+1] = 0.6; col[i*3+2] = 0.2;
+      }
+      // spiral arms
+      else {
+        col[i*3] = 0.6; col[i*3+1] = 0.7; col[i*3+2] = 1;
+      }
+    }
+
+    // 🌍 EARTH
+    else if (shapeFn === earthShape) {
+      const y = points[i][1];
+      if (y > 0.45) {
+        col[i*3] = 1; col[i*3+1] = 1; col[i*3+2] = 1;
+      } else if (Math.random() > 0.65) {
+        col[i*3] = 0.1; col[i*3+1] = 0.6; col[i*3+2] = 0.2;
+      } else {
+        col[i*3] = 0.05; col[i*3+1] = 0.3; col[i*3+2] = 0.8;
+      }
+    }
+
+    // ❤️ OTHER SHAPES
     else {
       const c = new THREE.Color(`hsl(${colorHue},100%,60%)`);
       col[i*3] = c.r;
@@ -64,7 +89,7 @@ function createParticles(shapeFn) {
   geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
 
   const mat = new THREE.PointsMaterial({
-    size: shapeFn === earthShape ? 0.025 : 0.03,
+    size: shapeFn === galaxyShape ? 0.02 : 0.03,
     vertexColors: true
   });
 
@@ -124,6 +149,26 @@ if (currentShape === earthShape) {
   particles.rotation.x += 0.0003;
 }
 
+if (currentShape === galaxyShape) {
+  particles.rotation.y += 0.002;
+
+  const pos = particles.geometry.attributes.position.array;
+
+  for (let i = 0; i < pos.length; i += 3) {
+    const x = pos[i];
+    const z = pos[i+2];
+
+    const d = Math.sqrt(x*x + z*z) + 0.001;
+
+    // black hole pull
+    pos[i]   -= (x / d) * 0.00005;
+    pos[i+2] -= (z / d) * 0.00005;
+  }
+
+  particles.geometry.attributes.position.needsUpdate = true;
+}
+
+    
     
   });
 
@@ -139,7 +184,8 @@ function switchShape() {
     heartShape,
     saturnShape,
     fireworkShape,
-    earthShape // 🌍 added
+    earthShape,
+    galaxyShape // 🌌 added
   ];
 
   currentShape = shapes[Math.floor(Math.random() * shapes.length)];
